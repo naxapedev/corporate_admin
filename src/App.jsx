@@ -1,0 +1,28 @@
+import { useEffect } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import ProtectedRoute from './routes/ProtectedRoute.jsx'
+import DashboardPage from './pages/DashboardPage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import { useAuthStore } from './stores/authStore.js'
+import './App.css'
+import './styles/manager-status.css'
+
+export default function App() {
+  const { initialize, initialized } = useAuthStore()
+
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
+  if (!initialized) return <div className="loading-screen" role="status">Loading portal…</div>
+
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  )
+}

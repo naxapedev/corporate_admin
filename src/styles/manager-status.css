@@ -1,0 +1,55 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status.active { color: #067647; }
+.status.deleted { color: var(--danger); }
+.deleted-row { background: #fffbfa; }
+.deleted-row td > strong,
+.deleted-row code { color: var(--muted); }
+
+.status-action {
+  min-height: 36px;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 700;
+  background: white;
+}
+
+.status-action.delete { border: 1px solid #fda29b; color: var(--danger); }
+.status-action.restore { border: 1px solid #84caff; color: #175cd3; }
+.status-action:hover:not(:disabled) { background: #f9fafb; }
+.not-applicable { color: var(--muted); font-size: .8rem; }
+
+.page-alert { margin: 0 0 20px; }
+.side-panels { display: grid; gap: 24px; }
+.department-directory { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.department-tags { display: flex; flex-wrap: wrap; gap: 6px; min-width: 130px; }
+.department-tags > span { padding: 4px 8px; border-radius: 999px; background: var(--soft); color: var(--brand); font-size: .75rem; font-weight: 700; }
+.department-picker { margin: 22px 0 0; padding: 0; border: 0; }
+.department-picker legend { margin-bottom: 10px; color: #344054; font-size: .875rem; font-weight: 700; }
+.department-picker label { display: flex; align-items: center; gap: 9px; min-height: 36px; color: #344054; font-size: .875rem; }
+.department-picker input { width: 18px; height: 18px; accent-color: var(--brand); }
+.department-picker p { font-size: .85rem; }
+.profile-details { max-width: 760px; }
+.profile-details dl { display: grid; gap: 0; margin: 24px 0 0; }
+.profile-details dl > div { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 20px; padding: 16px 0; border-top: 1px solid var(--line); }
+.profile-details dt { color: var(--muted); font-size: .875rem; font-weight: 600; }
+.profile-details dd { margin: 0; overflow-wrap: anywhere; }
+.capitalize { text-transform: capitalize; }
+
+@media (max-width: 600px) {
+  .profile-details dl > div { grid-template-columns: 1fr; gap: 6px; }
+}
