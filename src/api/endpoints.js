@@ -11,6 +11,7 @@ export const endpoints = {
     employees: '/portal/employees',
     user: (userId) => `/portal/users/${userId}`,
     userStatus: (userId) => `/portal/users/${userId}/status`,
+    permanentUser: (userId) => `/portal/users/${userId}/permanent`,
     managerStatus: (managerId) => `/portal/managers/${managerId}/status`,
     departments: '/portal/departments',
     department: (departmentId) => `/portal/departments/${departmentId}`,

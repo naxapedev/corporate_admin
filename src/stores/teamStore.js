@@ -87,6 +87,21 @@ export const useTeamStore = create((set, get) => ({
       throw error
     }
   },
+  permanentlyDeleteUser: async (userId) => {
+    set({ updatingId: userId, error: '', success: '' })
+    const target = get().users.find((user) => user.id === userId)
+    try {
+      await portalApi.permanentlyDeleteUser(userId)
+      set((state) => ({
+        users: state.users.filter((user) => user.id !== userId),
+        updatingId: null,
+        success: `${target?.username ?? 'User'} and their chat data were permanently deleted.`,
+      }))
+    } catch (error) {
+      set({ updatingId: null, error: error.message })
+      throw error
+    }
+  },
   createDepartment: async (name) => {
     set({ creatingDepartment: true, error: '', success: '' })
     try {

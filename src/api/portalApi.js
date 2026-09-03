@@ -19,6 +19,9 @@ export const portalApi = {
     method: 'PATCH',
     body: JSON.stringify({ isDeleted }),
   }),
+  permanentlyDeleteUser: (userId) => apiRequest(endpoints.portal.permanentUser(userId), {
+    method: 'DELETE',
+  }),
   setManagerDeleted: (managerId, isDeleted) => apiRequest(
     endpoints.portal.managerStatus(managerId),
     { method: 'PATCH', body: JSON.stringify({ isDeleted }) },
