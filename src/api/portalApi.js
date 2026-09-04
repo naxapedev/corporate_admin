@@ -3,6 +3,10 @@ import { endpoints } from './endpoints.js'
 
 export const portalApi = {
   getUsers: () => apiRequest(endpoints.portal.users),
+  createAdmin: (admin) => apiRequest(endpoints.portal.admins, {
+    method: 'POST',
+    body: JSON.stringify(admin),
+  }),
   createManager: (manager) => apiRequest(endpoints.portal.managers, {
     method: 'POST',
     body: JSON.stringify(manager),

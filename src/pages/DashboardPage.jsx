@@ -13,12 +13,14 @@ import { useTeamStore } from '../stores/teamStore.js'
 import '../styles/team-management.css'
 
 const emptyManager = () => ({ username: '', email: '', password: '', departmentIds: [] })
+const emptyAdmin = () => ({ username: '', email: '', password: '', departmentIds: [] })
 const emptyEmployee = () => ({ ...emptyManager(), managerId: '' })
 
 export default function DashboardPage() {
   const { user, logout } = useAuthStore()
   const team = useTeamStore()
   const [managerForm, setManagerForm] = useState(emptyManager)
+  const [adminForm, setAdminForm] = useState(emptyAdmin)
   const [employeeForm, setEmployeeForm] = useState(emptyEmployee)
   const [departmentName, setDepartmentName] = useState('')
   const [departmentFilter, setDepartmentFilter] = useState('all')
@@ -53,6 +55,10 @@ export default function DashboardPage() {
   const submitManager = async (event) => {
     event.preventDefault()
     try { await team.createManager(managerForm); setManagerForm(emptyManager()); setDialog(null) } catch { /* Toast renders the store error. */ }
+  }
+  const submitAdmin = async (event) => {
+    event.preventDefault()
+    try { await team.createAdmin(adminForm); setAdminForm(emptyAdmin()); setDialog(null) } catch { /* Toast renders the store error. */ }
   }
   const submitEmployee = async (event) => {
     event.preventDefault()
@@ -91,6 +97,7 @@ export default function DashboardPage() {
   const closeDialog = useCallback(() => setDialog(null), [])
 
   const headerActions = user.role === 'employee' ? null : <>
+    {user.role === 'admin' && <button type="button" className="header-action secondary" onClick={() => setDialog('admin')}>Add admin</button>}
     {user.role === 'admin' && <button type="button" className="header-action secondary" onClick={() => setDialog('departments')}>Departments</button>}
     {user.role === 'admin' && <button type="button" className="header-action secondary" onClick={() => setDialog('manager')}>Add manager</button>}
     <button type="button" className="header-action primary-action" onClick={() => setDialog('employee')}>Add employee</button>
@@ -119,6 +126,9 @@ export default function DashboardPage() {
 
       <ActionModal open={dialog === 'manager'} title="Add manager" description="Create manager access and assign at least one department." onClose={closeDialog}>
         <UserForm title="New manager" description="Assign at least one department." submitLabel="Add manager" value={managerForm} onChange={setManagerForm} onSubmit={submitManager} departments={team.departments} loading={team.creating} />
+      </ActionModal>
+      <ActionModal open={dialog === 'admin'} title="Add administrator" description="Create another account with full workspace administration access." onClose={closeDialog}>
+        <UserForm title="New administrator" description="This account will have full portal access." submitLabel="Add administrator" value={adminForm} onChange={setAdminForm} onSubmit={submitAdmin} departments={[]} loading={team.creating} />
       </ActionModal>
       <ActionModal open={dialog === 'employee'} title="Add employee" description={user.role === 'manager' ? 'This employee will report to you.' : 'Choose the employee’s manager and department access.'} onClose={closeDialog}>
         <UserForm title="New employee" description="Employees remain under their selected manager." submitLabel="Add employee" value={employeeForm} onChange={setEmployeeForm} onSubmit={submitEmployee} departments={employeeDepartments.length > 1 ? employeeDepartments : []} managers={managers.filter((manager) => !manager.isDeleted)} showManager={user.role === 'admin'} automaticDepartment={employeeDepartments.length === 1 ? employeeDepartments[0].name : ''} loading={team.creating} />

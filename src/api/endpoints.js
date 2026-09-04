@@ -1,5 +1,7 @@
 export const endpoints = {
   auth: {
+    signup: '/portal/auth/signup',
+    setupStatus: '/portal/auth/setup-status',
     login: '/portal/auth/login',
     profile: '/portal/profile',
     refresh: '/portal/auth/access-token',
@@ -7,6 +9,7 @@ export const endpoints = {
   },
   portal: {
     users: '/portal/users',
+    admins: '/portal/admins',
     managers: '/portal/managers',
     employees: '/portal/employees',
     user: (userId) => `/portal/users/${userId}`,

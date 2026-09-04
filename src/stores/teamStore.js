@@ -20,6 +20,18 @@ export const useTeamStore = create((set, get) => ({
       set({ error: error.message })
     }
   },
+  createAdmin: async (admin) => {
+    set({ creating: true, error: '', success: '' })
+    try {
+      const result = await portalApi.createAdmin(admin)
+      set({ creating: false, success: `${result.user.username} was added as an administrator.` })
+      await get().fetchUsers()
+      return result.user
+    } catch (error) {
+      set({ creating: false, error: error.message })
+      throw error
+    }
+  },
   createManager: async (manager) => {
     set({ creating: true, error: '', success: '' })
     try {

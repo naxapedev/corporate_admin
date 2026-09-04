@@ -3,12 +3,13 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import SignupPage from './pages/SignupPage.jsx'
 import { useAuthStore } from './stores/authStore.js'
 import './App.css'
 import './styles/manager-status.css'
 
 export default function App() {
-  const { initialize, initialized } = useAuthStore()
+  const { initialize, initialized, needsSetup } = useAuthStore()
 
   useEffect(() => {
     initialize()
@@ -18,7 +19,8 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={needsSetup ? <SignupPage /> : <Navigate to="/login" replace />} />
+      <Route path="/login" element={needsSetup ? <Navigate to="/signup" replace /> : <LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
       </Route>
