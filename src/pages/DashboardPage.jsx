@@ -13,7 +13,7 @@ import { useTeamStore } from '../stores/teamStore.js'
 import '../styles/team-management.css'
 
 const emptyManager = () => ({ username: '', email: '', password: '', departmentIds: [] })
-const emptyAdmin = () => ({ username: '', email: '', password: '', departmentIds: [] })
+const emptyAdmin = () => ({ username: '', email: '', password: '' })
 const emptyEmployee = () => ({ ...emptyManager(), managerId: '' })
 
 export default function DashboardPage() {
