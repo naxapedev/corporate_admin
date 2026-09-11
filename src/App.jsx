@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
+import DepartmentsPage from './pages/DepartmentsPage.jsx'
+import DeletedUsersPage from './pages/DeletedUsersPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
@@ -23,6 +25,8 @@ export default function App() {
       <Route path="/login" element={needsSetup ? <Navigate to="/signup" replace /> : <LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/departments" element={<DepartmentsPage />} />
+        <Route path="/deleted-users" element={<DeletedUsersPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

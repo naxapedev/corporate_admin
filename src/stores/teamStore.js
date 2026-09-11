@@ -2,14 +2,31 @@ import { create } from 'zustand'
 import { portalApi } from '../api/portalApi.js'
 
 export const useTeamStore = create((set, get) => ({
-  users: [], departments: [], loading: false, creating: false, creatingDepartment: false, updatingId: null, error: '', success: '',
-  fetchUsers: async () => {
+  users: [], managerOptions: [], departments: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 1 }, totals: { total: 0, employees: 0, managers: 0, active: 0 }, currentUserQuery: {}, loading: false, creating: false, creatingDepartment: false, updatingId: null, error: '', success: '',
+  fetchUsers: async (params = {}) => {
+    const query = { page: 1, limit: 10, deleted: false, ...params }
     set({ loading: true, error: '' })
     try {
-      const users = await portalApi.getUsers()
-      set({ users, loading: false })
+      const result = await portalApi.getUsers(query)
+      const users = Array.isArray(result) ? result : result.users
+      set({
+        users: users ?? [],
+        pagination: Array.isArray(result) ? { page: 1, limit: users.length || 10, total: users.length, totalPages: 1 } : result.pagination,
+        totals: Array.isArray(result) ? { total: users.length, employees: users.filter((item) => item.role === 'employee').length, managers: users.filter((item) => item.role === 'manager').length, active: users.filter((item) => item.isActive && !item.isDeleted).length } : result.totals,
+        currentUserQuery: query,
+        loading: false,
+      })
     } catch (error) {
       set({ loading: false, error: error.message })
+    }
+  },
+  refreshUsers: async () => get().fetchUsers(get().currentUserQuery),
+  fetchManagerOptions: async () => {
+    try {
+      const result = await portalApi.getUsers({ page: 1, limit: 100, role: 'manager', deleted: false })
+      set({ managerOptions: Array.isArray(result) ? result : result.users ?? [] })
+    } catch (error) {
+      set({ error: error.message })
     }
   },
   fetchDepartments: async () => {
@@ -25,7 +42,7 @@ export const useTeamStore = create((set, get) => ({
     try {
       const result = await portalApi.createAdmin(admin)
       set({ creating: false, success: `${result.user.username} was added as an administrator.` })
-      await get().fetchUsers()
+      await get().refreshUsers()
       return result.user
     } catch (error) {
       set({ creating: false, error: error.message })
@@ -37,7 +54,8 @@ export const useTeamStore = create((set, get) => ({
     try {
       const result = await portalApi.createManager(manager)
       set({ creating: false, success: `${result.user.username} was added as a manager.` })
-      await get().fetchUsers()
+      await get().fetchManagerOptions()
+      await get().refreshUsers()
       return result.user
     } catch (error) {
       set({ creating: false, error: error.message })
@@ -49,7 +67,7 @@ export const useTeamStore = create((set, get) => ({
     try {
       const result = await portalApi.createEmployee(employee)
       set({ creating: false, success: `${result.user.username} was added as an employee.` })
-      await get().fetchUsers()
+      await get().refreshUsers()
       return result.user
     } catch (error) {
       set({ creating: false, error: error.message })
@@ -62,6 +80,7 @@ export const useTeamStore = create((set, get) => ({
       const result = await portalApi.updateUser(userId, changes)
       set((state) => ({
         users: state.users.map((user) => user.id === userId ? result.user : user),
+        managerOptions: state.managerOptions.map((user) => user.id === userId ? result.user : user),
         updatingId: null,
         success: `${result.user.username} was updated.`,
       }))
@@ -75,10 +94,23 @@ export const useTeamStore = create((set, get) => ({
     set({ updatingId: userId, error: '', success: '' })
     try {
       const result = await portalApi.setUserDeleted(userId, isDeleted)
+      set({ updatingId: null, success: `${result.user.username} was ${isDeleted ? 'deleted' : 'restored'}.` })
+      await get().fetchManagerOptions()
+      await get().refreshUsers()
+    } catch (error) {
+      set({ updatingId: null, error: error.message })
+      throw error
+    }
+  },
+  setUserActive: async (userId, isActive) => {
+    set({ updatingId: userId, error: '', success: '' })
+    try {
+      const result = await portalApi.setUserActive(userId, isActive)
       set((state) => ({
         users: state.users.map((user) => user.id === userId ? result.user : user),
+        managerOptions: state.managerOptions.map((user) => user.id === userId ? result.user : user),
         updatingId: null,
-        success: `${result.user.username} was ${isDeleted ? 'deleted' : 'restored'}.`,
+        success: `${result.user.username} was marked ${isActive ? 'active' : 'inactive'}.`,
       }))
     } catch (error) {
       set({ updatingId: null, error: error.message })
@@ -91,6 +123,7 @@ export const useTeamStore = create((set, get) => ({
       const result = await portalApi.setManagerDeleted(managerId, isDeleted)
       set((state) => ({
         users: state.users.map((user) => user.id === managerId ? result.user : user),
+        managerOptions: state.managerOptions.map((user) => user.id === managerId ? result.user : user),
         updatingId: null,
         success: `${result.user.username} was ${isDeleted ? 'deleted' : 'restored'}.`,
       }))
@@ -106,9 +139,11 @@ export const useTeamStore = create((set, get) => ({
       await portalApi.permanentlyDeleteUser(userId)
       set((state) => ({
         users: state.users.filter((user) => user.id !== userId),
+        managerOptions: state.managerOptions.filter((user) => user.id !== userId),
         updatingId: null,
         success: `${target?.username ?? 'User'} and their chat data were permanently deleted.`,
       }))
+      await get().refreshUsers()
     } catch (error) {
       set({ updatingId: null, error: error.message })
       throw error
@@ -161,5 +196,5 @@ export const useTeamStore = create((set, get) => ({
     }
   },
   clearStatus: () => set({ error: '', success: '' }),
-  reset: () => set({ users: [], departments: [], loading: false, creating: false, creatingDepartment: false, updatingId: null, error: '', success: '' }),
+  reset: () => set({ users: [], managerOptions: [], departments: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 1 }, totals: { total: 0, employees: 0, managers: 0, active: 0 }, currentUserQuery: {}, loading: false, creating: false, creatingDepartment: false, updatingId: null, error: '', success: '' }),
 }))

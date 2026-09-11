@@ -2,7 +2,14 @@ import { apiRequest } from './client.js'
 import { endpoints } from './endpoints.js'
 
 export const portalApi = {
-  getUsers: () => apiRequest(endpoints.portal.users),
+  getUsers: (params = {}) => {
+    const query = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.set(key, value)
+    })
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    return apiRequest(`${endpoints.portal.users}${suffix}`)
+  },
   createAdmin: (admin) => apiRequest(endpoints.portal.admins, {
     method: 'POST',
     body: JSON.stringify(admin),
@@ -22,6 +29,10 @@ export const portalApi = {
   setUserDeleted: (userId, isDeleted) => apiRequest(endpoints.portal.userStatus(userId), {
     method: 'PATCH',
     body: JSON.stringify({ isDeleted }),
+  }),
+  setUserActive: (userId, isActive) => apiRequest(endpoints.portal.userActive(userId), {
+    method: 'PATCH',
+    body: JSON.stringify({ isActive }),
   }),
   permanentlyDeleteUser: (userId) => apiRequest(endpoints.portal.permanentUser(userId), {
     method: 'DELETE',
