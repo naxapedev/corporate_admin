@@ -11,11 +11,16 @@ import './App.css'
 import './styles/manager-status.css'
 
 export default function App() {
-  const { initialize, initialized, needsSetup } = useAuthStore()
+  const { initialize, initialized, needsSetup, expireSession } = useAuthStore()
 
   useEffect(() => {
     initialize()
   }, [initialize])
+
+  useEffect(() => {
+    window.addEventListener('portal-session-expired', expireSession)
+    return () => window.removeEventListener('portal-session-expired', expireSession)
+  }, [expireSession])
 
   if (!initialized) return <div className="loading-screen" role="status">Loading portal…</div>
 

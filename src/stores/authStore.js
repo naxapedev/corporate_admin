@@ -58,5 +58,6 @@ export const useAuthStore = create((set) => ({
       // Local logout still completes if the server is unavailable.
     }
   },
+  expireSession: () => set({ user: null, error: '' }),
   clearError: () => set({ error: '' }),
 }))

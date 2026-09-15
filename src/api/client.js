@@ -3,6 +3,14 @@ const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
 if (!API_URL) throw new Error('VITE_API_URL is not configured')
 
 let refreshRequest = null
+const SESSION_EXPIRED_EVENT = 'portal-session-expired'
+
+const isAuthPage = () => ['/login', '/signup'].includes(window.location.pathname)
+
+const expireSession = () => {
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
+  if (!isAuthPage()) window.location.assign('/login')
+}
 
 const refreshAccessToken = async () => {
   if (!refreshRequest) {
@@ -24,7 +32,8 @@ const shouldRefresh = (response, body, path, retried) => {
 }
 
 const requestOptions = (options) => {
-  const { _retried, ...fetchOptions } = options
+  const fetchOptions = { ...options }
+  delete fetchOptions._retried
   return {
     ...fetchOptions,
     credentials: 'include',
@@ -42,6 +51,7 @@ export async function apiRequest(path, options = {}) {
   if (shouldRefresh(response, body, path, options._retried)) {
     const refreshed = await refreshAccessToken()
     if (refreshed.ok) return apiRequest(path, { ...options, _retried: true })
+    if (refreshed.status === 401) expireSession()
   }
 
   if (!response.ok) {
